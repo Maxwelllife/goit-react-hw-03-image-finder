@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import s from './Searchbar.module.css';
 import { BsSearch } from 'react-icons/bs';
+import PropTypes from 'prop-types';
 
 class Searchbar extends Component {
   state = {
@@ -16,16 +17,14 @@ class Searchbar extends Component {
   handleSubmit = e => {
     e.preventDefault();
     this.props.catchSubmitInfo(this.state.inputValue);
-    // this.setState({inputValue: ''})
   };
 
   render() {
     return (
       <header className={s.searchbar}>
         <form className="form" onSubmit={this.handleSubmit}>
-          <button type="submit" className={s.button}>
-            <BsSearch size="20px" />
-            {/* <span className={s.buttonLabel}></span> */}
+          <button type="submit" className={s.buttonIcon}>
+            <BsSearch size="15px" />
           </button>
 
           <input
@@ -42,5 +41,9 @@ class Searchbar extends Component {
     );
   }
 }
+
+Searchbar.propTypes = {
+  catchSubmitInfo: PropTypes.func.isRequired,
+};
 
 export default Searchbar;

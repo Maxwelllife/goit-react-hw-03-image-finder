@@ -16,31 +16,66 @@ class App extends Component {
     isLoading: false,
     error: null,
     page: 1,
-    request: '',
+    pages: 0,
+    request: null,
+    url: '',
+    alt: '',
   };
-  // componentDidUpdate(_, prevState) {
-  //   console.log('prevState.items: ', prevState.items);
-  //   console.log('this.state.items', this.state.items);
 
-  //   if (this.state.items !== prevState.items) {
-  //     console.log('prevState.items: ', prevState.items);
-  //     this.fetchPhotosGallary(this.state.page);
-  //   }
-  // }
+  componentDidUpdate(_, prevState) {
+    const { request, page } = this.state;
 
-  fetchPhotosGallary = async query => {
+    if (
+      (request !== null && prevState.request !== request) ||
+      prevState.page !== page
+    ) {
+      this.fetchPhotosGallary(request, page);
+    }
+  }
+
+  handleFormSubmit = query => {
+    this.setState({
+      request: query,
+      page: 1,
+      items: [],
+    });
+    console.log('query: ', query);
+  };
+  handleLoadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+  };
+
+  openModal = (url, alt) => {
+    this.setState({
+      url: url,
+      alt: alt,
+    });
+  };
+  closeModal = () => {
+    this.setState({
+      url: '',
+      alt: '',
+    });
+  };
+
+  fetchPhotosGallary = async (request, page) => {
     this.setState({
       isLoading: true,
     });
+
     try {
-      const gallary = await pixabayAPI.getGallary(
-        // this.state.request,
-        // this.state.page
-        query
+      const { total, totalHits, hits } = await pixabayAPI.getGallary(
+        request,
+        page
       );
-      console.log('gallary: ', gallary);
-      this.setState(({ items }) => {
-        return { items: [...items, ...gallary.hits] };
+
+      this.setState(({ items, pages }) => {
+        return {
+          items: [...items, ...hits],
+          pages: (pages = total / totalHits),
+        };
       });
     } catch (error) {
       this.setState({ error: error.message });
@@ -51,13 +86,11 @@ class App extends Component {
     }
   };
 
-  // handleFormSubmit = query => {
-  //   this.setState({ request: query });
-  //   console.log('query: ', query);
-  // };
-
   render() {
-    const { items } = this.state;
+    const { items, pages, isLoading, url, alt } = this.state;
+    // const { largeImageURL, tags } = items;
+    console.log('page: ', pages);
+    console.log('items: ', items);
     return (
       <div
         style={{
@@ -68,16 +101,19 @@ class App extends Component {
         }}
       >
         {/* в инфо приходит наш стейт с формы после сабмита и записываеться в параметр дата */}
-        <Searchbar catchSubmitInfo={this.fetchPhotosGallary} />
-        {this.state.isLoading && <Loader />}
-        <ImageGallery hits={items}>
+        <Searchbar catchSubmitInfo={this.handleFormSubmit} />
+        {isLoading && <Loader />}
+        <ImageGallery hits={items} onItemClick={this.openModal}>
           <ImageGalleryItem />
-          <Button />
         </ImageGallery>
-        <Modal />
+        <Button onClick={this.handleLoadMore} pages={pages} />
+        {url && (
+          <Modal onClose={this.closeModal}>
+            <img src={url} alt={alt} />
+          </Modal>
+        )}
       </div>
     );
   }
 }
-
 export default App;
