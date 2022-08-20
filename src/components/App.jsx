@@ -1,14 +1,7 @@
 import 'modern-normalize/modern-normalize.css';
 import { Component } from 'react';
 import { pixabayAPI } from '../services/api';
-import {
-  Modal,
-  Button,
-  Loader,
-  ImageGalleryItem,
-  ImageGallery,
-  Searchbar,
-} from '../components';
+import { Modal, Button, Loader, ImageGallery, Searchbar } from '../components';
 
 class App extends Component {
   state = {
@@ -22,25 +15,30 @@ class App extends Component {
     alt: '',
   };
 
+  count = 0;
+
   componentDidUpdate(_, prevState) {
     const { request, page } = this.state;
-
-    if (
-      (request !== null && prevState.request !== request) ||
-      prevState.page !== page
-    ) {
+    if (prevState.request !== request || prevState.page !== page) {
       this.fetchPhotosGallary(request, page);
+    }
+    if (page > 1) {
+      window.scrollBy({
+        top: window.innerHeight - 140,
+        behavior: 'smooth',
+      });
     }
   }
 
   handleFormSubmit = query => {
+    if (!query.trim() || this.state.request === query) return;
     this.setState({
       request: query,
       page: 1,
       items: [],
     });
-    // console.log('query: ', query);
   };
+
   handleLoadMore = () => {
     this.setState(prevState => ({
       page: prevState.page + 1,
@@ -56,7 +54,6 @@ class App extends Component {
   closeModal = () => {
     this.setState({
       url: '',
-      alt: '',
     });
   };
 
@@ -71,12 +68,10 @@ class App extends Component {
         page
       );
 
-      this.setState(({ items, pages }) => {
-        return {
-          items: [...items, ...hits],
-          pages: (pages = total / totalHits),
-        };
-      });
+      this.setState(({ items }) => ({
+        items: [...items, ...hits],
+        pages: total / totalHits,
+      }));
     } catch (error) {
       this.setState({ error: error.message });
     } finally {
@@ -87,26 +82,18 @@ class App extends Component {
   };
 
   render() {
-    const { items, pages, isLoading, url, alt } = this.state;
-
-    // console.log('page: ', pages);
-    // console.log('items: ', items);
+    const { items, page, pages, isLoading, url, alt } = this.state;
+    console.log('Render N=', ++this.count);
     return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gridGap: '16px',
-          paddingBottom: '24px',
-        }}
-      >
+      <div className="app">
         {/* в инфо приходит наш стейт с формы после сабмита и записываеться в параметр дата */}
         <Searchbar catchSubmitInfo={this.handleFormSubmit} />
         {isLoading && <Loader />}
-        <ImageGallery hits={items} onItemClick={this.openModal}>
-          <ImageGalleryItem />
-        </ImageGallery>
-        <Button onClick={this.handleLoadMore} pages={pages} />
+
+        <ImageGallery hits={items} onItemClick={this.openModal} />
+
+        {pages > page && <Button onClick={this.handleLoadMore} />}
+
         {url && (
           <Modal onClose={this.closeModal}>
             <img src={url} alt={alt} />
