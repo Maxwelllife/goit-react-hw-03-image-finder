@@ -1,5 +1,6 @@
 import React from 'react';
 import s from './Button.module.css';
+import PropTypes from 'prop-types';
 
 function Button({ onClick, pages }) {
   if (pages > 1) {
@@ -10,5 +11,10 @@ function Button({ onClick, pages }) {
     );
   }
 }
+
+Button.porpTypes = {
+  obClick: PropTypes.func.isRequired,
+  pages: PropTypes.number.isRequired,
+};
 
 export default Button;
