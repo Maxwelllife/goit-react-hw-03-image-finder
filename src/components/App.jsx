@@ -39,7 +39,7 @@ class App extends Component {
       page: 1,
       items: [],
     });
-    console.log('query: ', query);
+    // console.log('query: ', query);
   };
   handleLoadMore = () => {
     this.setState(prevState => ({
@@ -88,9 +88,9 @@ class App extends Component {
 
   render() {
     const { items, pages, isLoading, url, alt } = this.state;
-    // const { largeImageURL, tags } = items;
-    console.log('page: ', pages);
-    console.log('items: ', items);
+
+    // console.log('page: ', pages);
+    // console.log('items: ', items);
     return (
       <div
         style={{
